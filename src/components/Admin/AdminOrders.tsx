@@ -37,8 +37,15 @@ const AdminOrders = () => {
   const sendWhatsAppMessage = (phoneNumber: string, message: string) => {
     let formattedPhone = phoneNumber.replace(/\D/g, '');
 
+    if (formattedPhone.length < 9) {
+      alert("Número de telefone inválido!");
+      return;
+    }
+
     if (!formattedPhone.startsWith('55')) {
-      formattedPhone = '79' + formattedPhone;
+      formattedPhone = '55' + '79' + formattedPhone;
+    } else if (formattedPhone.length === 12) {
+      formattedPhone = formattedPhone.slice(0, 4) + '79' + formattedPhone.slice(4);
     }
 
     const whatsappURL = `https://wa.me/${formattedPhone}?text=${encodeURIComponent(message)}`;
