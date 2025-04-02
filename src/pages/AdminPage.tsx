@@ -1,11 +1,11 @@
 import { useState } from 'react';
 
-import AdminControl from '../components/Admin/AdminControl';
 import AdminOrders from '../components/Admin/AdminOrders';
+import AdminControl from '../components/Admin/AdminControl';
 import AdminStats from '../components/Admin/AdminStats';
 
 const AdminPage = () => {
-  const [activeTab, setActiveTab] = useState<'control' | 'orders' | 'stats'>('control');
+  const [activeTab, setActiveTab] = useState<'orders' | 'control' | 'stats'>('orders');
 
   return (
     <div className="max-w-6xl mx-auto">
@@ -15,16 +15,16 @@ const AdminPage = () => {
 
       <div className="flex border-b border-gray-200 mb-6">
         <button
-          onClick={() => setActiveTab('control')}
-          className={`px-4 py-2 font-medium cursor-pointer ${activeTab === 'control' ? 'text-orange-500 border-b-2 border-orange-500' : 'text-gray-500'}`}
-        >
-          Controle de Itens
-        </button>
-        <button
           onClick={() => setActiveTab('orders')}
           className={`px-4 py-2 font-medium cursor-pointer ${activeTab === 'orders' ? 'text-orange-500 border-b-2 border-orange-500' : 'text-gray-500'}`}
         >
           Pedidos
+        </button>
+        <button
+          onClick={() => setActiveTab('control')}
+          className={`px-4 py-2 font-medium cursor-pointer ${activeTab === 'control' ? 'text-orange-500 border-b-2 border-orange-500' : 'text-gray-500'}`}
+        >
+          Controle de Itens
         </button>
         <button
           onClick={() => setActiveTab('stats')}
@@ -35,8 +35,8 @@ const AdminPage = () => {
       </div>
 
       <div className="bg-white rounded-lg shadow-md p-6">
-        {activeTab === 'control' && <AdminControl />}
         {activeTab === 'orders' && <AdminOrders />}
+        {activeTab === 'control' && <AdminControl />}
         {activeTab === 'stats' && <AdminStats />}
       </div>
     </div>

@@ -61,8 +61,10 @@ const AdminOrders = () => {
 
   const updateOrderStatus = async (orderId: string, status: OrderStatus, contact: string) => {
     try {
+      // Atualiza o status do pedido no Firestore
       await updateDoc(doc(db, 'orders', orderId), { status });
 
+      // Define a mensagem de acordo com o status
       let message = '';
       switch (status) {
         case 'accepted':
@@ -76,10 +78,12 @@ const AdminOrders = () => {
           break;
       }
 
+      // Envia mensagem via WhatsApp
       if (contact) {
         sendWhatsAppMessage(contact, message);
       }
 
+      // Atualiza a lista de pedidos no painel do administrador
       fetchOrders();
     } catch (error) {
       console.error('Erro ao atualizar pedido:', error);

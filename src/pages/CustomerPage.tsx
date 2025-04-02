@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { collection, addDoc, serverTimestamp, where, query, getDocs } from 'firebase/firestore';
+import { collection, addDoc, serverTimestamp, where, query, getDocs, doc, onSnapshot } from 'firebase/firestore';
 import { db } from '../services/firebase';
 import type { Category, MenuItem as MenuItemType, Order, PaymentMethod } from '../types/types';
 
@@ -11,6 +11,7 @@ const CustomerPage = () => {
   const [cart, setCart] = useState<MenuItemType[]>([]);
   const [showForm, setShowForm] = useState(false);
   const [orderStatus, setOrderStatus] = useState<string | null>(null);
+  const [orderId, setOrderId] = useState<string | null>(null); // ID do pedido do cliente
 
   const orderSummaryRef = useRef<HTMLDivElement | null>(null);
   const orderStatusRef = useRef<HTMLDivElement | null>(null);
@@ -46,6 +47,20 @@ const CustomerPage = () => {
     fetchMenuItems();
   }, []);
 
+  useEffect(() => {
+    if (!orderId) return;
+
+    // Listener em tempo real para o pedido do cliente
+    const unsubscribe = onSnapshot(doc(db, 'orders', orderId), (docSnapshot) => {
+      if (docSnapshot.exists()) {
+        const data = docSnapshot.data();
+        setOrderStatus(data.status); // Atualiza o status do pedido no cliente
+      }
+    });
+
+    return () => unsubscribe(); // Cancela o listener ao desmontar
+  }, [orderId]);
+
   const addToCart = (item: MenuItemType) => {
     setCart([...cart, item]);
 
@@ -61,6 +76,15 @@ const CustomerPage = () => {
     const newCart = [...cart];
     newCart.splice(index, 1);
     setCart(newCart);
+  };
+
+  const focusOrderStatus = () => {
+    setTimeout(() => {
+      if (orderStatusRef.current) {
+        orderStatusRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        orderStatusRef.current.focus();
+      }
+    }, 100);
   };
 
   const submitOrder = async (customerInfo: {
@@ -85,27 +109,18 @@ const CustomerPage = () => {
         createdAt: serverTimestamp(),
       };
 
-      await addDoc(collection(db, 'orders'), order);
+      const docRef = await addDoc(collection(db, 'orders'), order);
+      setOrderId(docRef.id); // Salva o ID do pedido
       setOrderStatus('Pedido enviado com sucesso! Aguarde a confirmação.');
       setCart([]);
       setShowForm(false);
 
-      setTimeout(() => {
-        if (orderStatusRef.current) {
-          orderStatusRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
-          orderStatusRef.current.focus();
-        }
-      }, 100);
+      focusOrderStatus();
     } catch (error) {
       console.error('Erro ao enviar pedido:', error);
       setOrderStatus('Erro ao enviar pedido. Tente novamente.');
 
-      setTimeout(() => {
-        if (orderStatusRef.current) {
-          orderStatusRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
-          orderStatusRef.current.focus();
-        }
-      }, 100);
+      focusOrderStatus();
     }
   };
 
@@ -114,9 +129,18 @@ const CustomerPage = () => {
       {orderStatus && (
         <div
           ref={orderStatusRef}
-          className={`p-4 mb-6 rounded-lg ${orderStatus.includes('sucesso') ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}
+          className={`p-4 mb-6 rounded-lg ${orderStatus === 'completed'
+              ? 'bg-green-100 text-green-800'
+              : orderStatus === 'rejected'
+                ? 'bg-red-100 text-red-800'
+                : 'bg-yellow-100 text-yellow-800'
+            }`}
         >
-          {orderStatus}
+          {orderStatus === 'completed'
+            ? 'Seu pedido foi concluído! Obrigado por escolher nossos serviços. 🛵💨'
+            : orderStatus === 'rejected'
+              ? 'Infelizmente, seu pedido foi rejeitado. 😞'
+              : 'Aguarde, seu pedido está sendo processado... 🍔'}
         </div>
       )}
 
