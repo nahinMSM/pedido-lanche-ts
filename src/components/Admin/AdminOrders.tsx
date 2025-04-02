@@ -35,7 +35,12 @@ const AdminOrders = () => {
   };
 
   const sendWhatsAppMessage = (phoneNumber: string, message: string) => {
-    const formattedPhone = phoneNumber.replace(/\D/g, '');
+    let formattedPhone = phoneNumber.replace(/\D/g, '');
+
+    if (!formattedPhone.startsWith('55')) {
+      formattedPhone = '55' + formattedPhone;
+    }
+
     const whatsappURL = `https://wa.me/${formattedPhone}?text=${encodeURIComponent(message)}`;
     window.open(whatsappURL, '_blank');
   }
