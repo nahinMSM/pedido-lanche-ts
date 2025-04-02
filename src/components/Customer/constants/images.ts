@@ -1,0 +1,1 @@
+export const DEFAULT_FOOD_IMAGE = '/images/default-food.jpeg';
