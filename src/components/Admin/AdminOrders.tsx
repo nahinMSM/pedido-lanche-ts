@@ -37,7 +37,7 @@ const AdminOrders = () => {
   const sendWhatsAppMessage = (phoneNumber: string, message: string) => {
     const formattedPhone = phoneNumber.replace(/\D/g, '');
     const whatsappURL = `https://wa.me/${formattedPhone}?text=${encodeURIComponent(message)}`;
-    window.open(whatsappURL, '_blanck');
+    window.open(whatsappURL, '_blank');
   }
 
   const updateOrderStatus = async (orderId: string, status: OrderStatus, contact: string) => {
