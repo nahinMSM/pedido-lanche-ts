@@ -38,7 +38,7 @@ const AdminOrders = () => {
     let formattedPhone = phoneNumber.replace(/\D/g, '');
 
     if (!formattedPhone.startsWith('55')) {
-      formattedPhone = '55' + formattedPhone;
+      formattedPhone = '79' + formattedPhone;
     }
 
     const whatsappURL = `https://wa.me/${formattedPhone}?text=${encodeURIComponent(message)}`;
