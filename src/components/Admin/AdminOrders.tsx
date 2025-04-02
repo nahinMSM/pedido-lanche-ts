@@ -42,10 +42,17 @@ const AdminOrders = () => {
       return;
     }
 
+    formattedPhone = formattedPhone.replace(/\D/g, '');
+
     if (!formattedPhone.startsWith('55')) {
       formattedPhone = '55' + '79' + formattedPhone;
-    } else if (formattedPhone.length === 12) {
-      formattedPhone = formattedPhone.slice(0, 4) + '79' + formattedPhone.slice(4);
+    }
+    else if (formattedPhone.startsWith('55') && !formattedPhone.startsWith('5579')) {
+      if (formattedPhone.length >= 4 && formattedPhone.substring(2, 4) !== '79') {
+        formattedPhone = '5579' + formattedPhone.substring(4);
+      } else {
+        formattedPhone = '5579' + formattedPhone.substring(2);
+      }
     }
 
     const whatsappURL = `https://wa.me/${formattedPhone}?text=${encodeURIComponent(message)}`;
