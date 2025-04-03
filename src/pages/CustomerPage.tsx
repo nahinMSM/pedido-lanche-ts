@@ -54,7 +54,7 @@ const CustomerPage = () => {
     const unsubscribe = onSnapshot(doc(db, 'orders', orderId), (docSnapshot) => {
       if (docSnapshot.exists()) {
         const data = docSnapshot.data();
-        setOrderStatus(data.status); // Atualiza o status do pedido no cliente
+        setOrderStatus(data.statusMessage || ''); // Atualiza o status do pedido no cliente
       }
     });
 
