@@ -50,11 +50,10 @@ const CustomerPage = () => {
   useEffect(() => {
     if (!orderId) return;
 
-    // Listener em tempo real para o pedido do cliente
     const unsubscribe = onSnapshot(doc(db, 'orders', orderId), (docSnapshot) => {
       if (docSnapshot.exists()) {
         const data = docSnapshot.data();
-        setOrderStatus(data.statusMessage || ''); // Atualiza o status do pedido no cliente
+        setOrderStatus(data.status || ''); // Atualiza o estado com o status do Firestore
       }
     });
 
@@ -96,14 +95,14 @@ const CustomerPage = () => {
     changeAmount?: number | null;
   }) => {
     try {
-      const order: Order = {
+      const order: Omit<Order, 'id'> = {
         items: cart,
         customerName: customerInfo.name,
         address: customerInfo.address,
         contact: customerInfo.contact,
         paymentMethod: customerInfo.paymentMethod as PaymentMethod,
         changeAmount: customerInfo.changeAmount,
-        status: 'pending',
+        status: 'pending', // Status inicial
         finalTotal: customerInfo.finalTotal,
         total: cart.reduce((sum, item) => sum + item.price, 0),
         createdAt: serverTimestamp(),
@@ -111,7 +110,7 @@ const CustomerPage = () => {
 
       const docRef = await addDoc(collection(db, 'orders'), order);
       setOrderId(docRef.id); // Salva o ID do pedido
-      setOrderStatus('Pedido enviado com sucesso! Aguarde a confirmação.');
+      setOrderStatus('Aguarde, seu pedido está sendo processado... 🍔'); // Define a mensagem inicial diretamente no estado
       setCart([]);
       setShowForm(false);
 
@@ -130,12 +129,12 @@ const CustomerPage = () => {
         <div
           ref={orderStatusRef}
           className={`p-4 mb-6 rounded-lg ${orderStatus.includes('pronto para entrega') // Para pedidos aceitos
-              ? 'bg-blue-100 text-blue-800'
-              : orderStatus.includes('concluído') // Para pedidos concluídos
-                ? 'bg-green-100 text-green-800'
-                : orderStatus.includes('rejeitado') // Para pedidos rejeitados
-                  ? 'bg-red-100 text-red-800'
-                  : 'bg-yellow-100 text-yellow-800' // Para pedidos pendentes
+            ? 'bg-blue-100 text-blue-800'
+            : orderStatus.includes('concluído') // Para pedidos concluídos
+              ? 'bg-green-100 text-green-800'
+              : orderStatus.includes('rejeitado') // Para pedidos rejeitados
+                ? 'bg-red-100 text-red-800'
+                : 'bg-yellow-100 text-yellow-800' // Para pedidos pendentes
             }`}
         >
           {orderStatus}
