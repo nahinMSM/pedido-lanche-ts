@@ -34,8 +34,10 @@ const AdminOrders = () => {
 
   const updateOrderStatus = async (orderId: string, status: OrderStatus) => {
     try {
+      // Atualiza o status do pedido no Firestore
       await updateDoc(doc(db, 'orders', orderId), { status });
 
+      // Define a mensagem de acordo com o status
       let message = '';
       switch (status) {
         case 'accepted':
@@ -49,7 +51,7 @@ const AdminOrders = () => {
           break;
       }
 
-      console.log(`Status atualizado: ${message}`);
+      console.log(`Status atualizado: ${message}`); // Exibe a mensagem no console para depuração
     } catch (error) {
       console.error('Erro ao atualizar pedido:', error);
     }
