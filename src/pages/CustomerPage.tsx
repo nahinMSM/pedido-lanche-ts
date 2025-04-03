@@ -130,10 +130,10 @@ const CustomerPage = () => {
         <div
           ref={orderStatusRef}
           className={`p-4 mb-6 rounded-lg ${orderStatus === 'completed'
-              ? 'bg-green-100 text-green-800'
-              : orderStatus === 'rejected'
-                ? 'bg-red-100 text-red-800'
-                : 'bg-yellow-100 text-yellow-800'
+            ? 'bg-green-100 text-green-800'
+            : orderStatus === 'rejected'
+              ? 'bg-red-100 text-red-800'
+              : 'bg-yellow-100 text-yellow-800'
             }`}
         >
           {orderStatus === 'completed'

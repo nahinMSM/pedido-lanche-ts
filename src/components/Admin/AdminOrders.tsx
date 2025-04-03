@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { collection, getDocs, doc, updateDoc, query, orderBy, Timestamp } from 'firebase/firestore';
+import { collection, onSnapshot, doc, updateDoc, query, orderBy, Timestamp } from 'firebase/firestore';
 import { db } from '../../services/firebase';
 import { Order, OrderStatus } from '../../types/types';
 
@@ -8,63 +8,34 @@ const AdminOrders = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetchOrders();
+    const q = query(collection(db, 'orders'), orderBy('createdAt', 'desc'));
+    const unsubscribe = onSnapshot(q, (querySnapshot) => {
+      const ordersData = querySnapshot.docs.map(doc => {
+        const data = doc.data();
+        return {
+          id: doc.id,
+          items: data.items,
+          customerName: data.customerName,
+          address: data.address,
+          contact: data.contact,
+          paymentMethod: data.paymentMethod,
+          status: data.status,
+          finalTotal: data.finalTotal,
+          changeAmount: data.changeAmount ?? null,
+          createdAt: data.createdAt
+        } as Order;
+      });
+      setOrders(ordersData);
+      setLoading(false);
+    });
+
+    return () => unsubscribe(); // Cancela o listener ao desmontar
   }, []);
 
-  const fetchOrders = async () => {
-    setLoading(true);
-    const q = query(collection(db, 'orders'), orderBy('createdAt', 'desc'));
-    const querySnapshot = await getDocs(q);
-    const ordersData = querySnapshot.docs.map(doc => {
-      const data = doc.data();
-      return {
-        id: doc.id,
-        items: data.items,
-        customerName: data.customerName,
-        address: data.address,
-        contact: data.contact,
-        paymentMethod: data.paymentMethod,
-        status: data.status,
-        finalTotal: data.finalTotal,
-        changeAmount: data.changeAmount ?? null,
-        createdAt: data.createdAt
-      } as Order;
-    });
-    setOrders(ordersData);
-    setLoading(false);
-  };
-
-  const sendWhatsAppMessage = (phoneNumber: string, message: string) => {
-    let formattedPhone = phoneNumber.replace(/\D/g, '');
-
-    if (formattedPhone.length < 9) {
-      alert("Número de telefone inválido!");
-      return;
-    }
-
-    formattedPhone = formattedPhone.replace(/\D/g, '');
-
-    if (!formattedPhone.startsWith('55')) {
-      formattedPhone = '55' + '79' + formattedPhone;
-    }
-    else if (formattedPhone.startsWith('55') && !formattedPhone.startsWith('5579')) {
-      if (formattedPhone.length >= 4 && formattedPhone.substring(2, 4) !== '79') {
-        formattedPhone = '5579' + formattedPhone.substring(4);
-      } else {
-        formattedPhone = '5579' + formattedPhone.substring(2);
-      }
-    }
-
-    const whatsappURL = `https://wa.me/${formattedPhone}?text=${encodeURIComponent(message)}`;
-    window.open(whatsappURL, '_blank');
-  }
-
-  const updateOrderStatus = async (orderId: string, status: OrderStatus, contact: string) => {
+  const updateOrderStatus = async (orderId: string, status: OrderStatus) => {
     try {
-      // Atualiza o status do pedido no Firestore
       await updateDoc(doc(db, 'orders', orderId), { status });
 
-      // Define a mensagem de acordo com o status
       let message = '';
       switch (status) {
         case 'accepted':
@@ -78,13 +49,7 @@ const AdminOrders = () => {
           break;
       }
 
-      // Envia mensagem via WhatsApp
-      if (contact) {
-        sendWhatsAppMessage(contact, message);
-      }
-
-      // Atualiza a lista de pedidos no painel do administrador
-      fetchOrders();
+      console.log(`Status atualizado: ${message}`);
     } catch (error) {
       console.error('Erro ao atualizar pedido:', error);
     }
@@ -128,7 +93,7 @@ const AdminOrders = () => {
                 <span className="font-bold">Pedido #{order.id ? order.id.substring(0, 8) : 'N/A'}</span>
                 <span className="mx-2">•</span>
                 <span>
-                  {order.createdAt instanceof Timestamp
+                  {order.createdAt && order.createdAt instanceof Timestamp
                     ? new Date(order.createdAt.toMillis()).toLocaleString()
                     : 'Data inválida'}
                 </span>
@@ -142,12 +107,16 @@ const AdminOrders = () => {
               <div>
                 <h4 className="font-bold mb-2">Itens</h4>
                 <ul className="space-y-2">
-                  {order.items.map((item, index) => (
-                    <li key={index} className="flex justify-between">
-                      <span>{item.name}</span>
-                      <span>R$ {item.price.toFixed(2)}</span>
-                    </li>
-                  ))}
+                  {order.items && order.items.length > 0 ? (
+                    order.items.map((item, index) => (
+                      <li key={index} className="flex justify-between">
+                        <span>{item.name}</span>
+                        <span>R$ {item.price.toFixed(2)}</span>
+                      </li>
+                    ))
+                  ) : (
+                    <li className="text-gray-500">Nenhum item encontrado</li>
+                  )}
                   <li className="flex justify-between">
                     <span>Taxa de Entrega:</span>
                     <span>R$ 5,00</span>
@@ -174,7 +143,7 @@ const AdminOrders = () => {
                 <h4 className="font-bold mb-2">Ações</h4>
                 <div className="flex flex-wrap gap-2">
                   <button
-                    onClick={() => order.id && updateOrderStatus(order.id, 'accepted', order.contact)}
+                    onClick={() => order.id && updateOrderStatus(order.id, 'accepted')}
                     disabled={order.status !== 'pending'}
                     className={`px-3 py-1 rounded ${order.status === 'pending'
                       ? 'bg-blue-500 text-white hover:bg-blue-600 cursor-pointer'
@@ -184,7 +153,7 @@ const AdminOrders = () => {
                     Aceitar
                   </button>
                   <button
-                    onClick={() => order.id && updateOrderStatus(order.id, 'completed', order.contact)}
+                    onClick={() => order.id && updateOrderStatus(order.id, 'completed')}
                     disabled={order.status !== 'accepted'}
                     className={`px-3 py-1 rounded ${order.status === 'accepted'
                       ? 'bg-green-500 text-white hover:bg-green-600 cursor-pointer'
@@ -194,7 +163,7 @@ const AdminOrders = () => {
                     Concluir
                   </button>
                   <button
-                    onClick={() => order.id && updateOrderStatus(order.id, 'rejected', order.contact)}
+                    onClick={() => order.id && updateOrderStatus(order.id, 'rejected')}
                     disabled={order.status !== 'pending'}
                     className={`px-3 py-1 rounded ${order.status === 'pending'
                       ? 'bg-red-500 text-white hover:bg-red-600 cursor-pointer'
