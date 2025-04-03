@@ -53,7 +53,18 @@ const CustomerPage = () => {
     const unsubscribe = onSnapshot(doc(db, 'orders', orderId), (docSnapshot) => {
       if (docSnapshot.exists()) {
         const data = docSnapshot.data();
-        setOrderStatus(data.status || ''); // Atualiza o estado com o status do Firestore
+        // Verifica o status e define a mensagem correspondente
+        if (data.status === 'pending') {
+          setOrderStatus('Aguarde, seu pedido está sendo processado... 🍔');
+        } else if (data.status === 'accepted') {
+          setOrderStatus('Olá! O seu pedido está em preparo. Em breve estará pronto para entrega. 🍔🚀');
+        } else if (data.status === 'completed') {
+          setOrderStatus('Seu pedido foi concluído e já saiu para entrega! 🛵💨 Obrigado por escolher nossos serviços!');
+        } else if (data.status === 'rejected') {
+          setOrderStatus('Infelizmente, seu pedido não pôde ser processado. 😞 Por favor, tente novamente.');
+        } else {
+          setOrderStatus(''); // Caso não haja um status válido
+        }
       }
     });
 
