@@ -11,7 +11,7 @@ const CustomerPage = () => {
   const [cart, setCart] = useState<MenuItemType[]>([]);
   const [showForm, setShowForm] = useState(false);
   const [orderStatus, setOrderStatus] = useState<string | null>(null);
-  const [orderId, setOrderId] = useState<string | null>(null); // ID do pedido do cliente
+  const [orderId, setOrderId] = useState<string | null>(null);
 
   const orderSummaryRef = useRef<HTMLDivElement | null>(null);
   const orderStatusRef = useRef<HTMLDivElement | null>(null);
@@ -53,7 +53,6 @@ const CustomerPage = () => {
     const unsubscribe = onSnapshot(doc(db, 'orders', orderId), (docSnapshot) => {
       if (docSnapshot.exists()) {
         const data = docSnapshot.data();
-        // Verifica o status e define a mensagem correspondente
         if (data.status === 'pending') {
           setOrderStatus('Aguarde, seu pedido está sendo processado... 🍔');
         } else if (data.status === 'accepted') {
@@ -63,12 +62,12 @@ const CustomerPage = () => {
         } else if (data.status === 'rejected') {
           setOrderStatus('Infelizmente, seu pedido não pôde ser processado. 😞 Por favor, tente novamente.');
         } else {
-          setOrderStatus(''); // Caso não haja um status válido
+          setOrderStatus('');
         }
       }
     });
 
-    return () => unsubscribe(); // Cancela o listener ao desmontar
+    return () => unsubscribe();
   }, [orderId]);
 
   const addToCart = (item: MenuItemType) => {
@@ -139,13 +138,15 @@ const CustomerPage = () => {
       {orderStatus && (
         <div
           ref={orderStatusRef}
-          className={`p-4 mb-6 rounded-lg ${orderStatus.includes('pronto para entrega') // Para pedidos aceitos
-            ? 'bg-blue-100 text-blue-800'
-            : orderStatus.includes('concluído') // Para pedidos concluídos
-              ? 'bg-green-100 text-green-800'
-              : orderStatus.includes('rejeitado') // Para pedidos rejeitados
-                ? 'bg-red-100 text-red-800'
-                : 'bg-yellow-100 text-yellow-800' // Para pedidos pendentes
+          className={`
+            p-4 mb-6 rounded-lg 
+            ${orderStatus.includes('pronto para entrega')
+              ? 'bg-blue-100 text-blue-800'
+              : orderStatus.includes('concluído')
+                ? 'bg-green-100 text-green-800'
+                : orderStatus.includes('rejeitado')
+                  ? 'bg-red-100 text-red-800'
+                  : 'bg-yellow-100 text-yellow-800'
             }`}
         >
           {orderStatus}

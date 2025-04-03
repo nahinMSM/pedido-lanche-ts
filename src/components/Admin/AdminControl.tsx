@@ -16,6 +16,7 @@ const AdminControl = () => {
   const [editMode, setEditMode] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [previewImage, setPreviewImage] = useState<string | null>(null);
+
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const categories: Category[] = ['sandwiches', 'drinks', 'extras'];

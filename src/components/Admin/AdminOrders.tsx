@@ -30,7 +30,7 @@ const AdminOrders = () => {
       setLoading(false);
     });
 
-    return () => unsubscribe(); // Cancela o listener ao desmontar
+    return () => unsubscribe();
   }, []);
 
   useEffect(() => {
@@ -39,16 +39,15 @@ const AdminOrders = () => {
     const unsubscribe = onSnapshot(doc(db, 'orders', orderStatus), (docSnapshot) => {
       if (docSnapshot.exists()) {
         const data = docSnapshot.data();
-        setOrderStatus(data.statusMessage || ''); // Atualiza o estado com a mensagem do Firestore
+        setOrderStatus(data.statusMessage || '');
       }
     });
 
-    return () => unsubscribe(); // Cancela o listener ao desmontar
+    return () => unsubscribe();
   }, [orderStatus]);
 
   const updateOrderStatus = async (orderId: string, status: OrderStatus) => {
     try {
-      // Define a mensagem de acordo com o status
       let statusMessage = '';
       switch (status) {
         case 'accepted':
@@ -64,10 +63,9 @@ const AdminOrders = () => {
           statusMessage = 'Aguarde, seu pedido está sendo processado... 🍔';
       }
 
-      // Atualiza o status e a mensagem no Firestore
       await updateDoc(doc(db, 'orders', orderId), { status, statusMessage });
 
-      console.log(`Status atualizado: ${statusMessage}`); // Exibe a mensagem no console para depuração
+      console.log(`Status atualizado: ${statusMessage}`);
     } catch (error) {
       console.error('Erro ao atualizar pedido:', error);
     }
