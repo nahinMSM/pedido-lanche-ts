@@ -1,11 +1,5 @@
 @import "tailwindcss";
 
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
-
 html {
   scroll-behavior: smooth;
 }
@@ -16,26 +10,19 @@ body {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
 }
 
-.container {
-  width: 90%;
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 1rem;
-  -webkit-overflow-scrolling: touch;
-}
-
 button {
   -webkit-appearance: none;
   appearance: none;
   border: none;
 }
 
-@media (max-width: 768px) {
-  .container {
-    padding: 1rem;
+@media (prefers-color-scheme: light) {
+  :root {
+    color: #213547;
+    background-color: #ffffff;
   }
 
-  h1 {
-    font-size: 1.5rem;
+  a:hover {
+    color: #747bff;
   }
 }
