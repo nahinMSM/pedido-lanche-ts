@@ -6,6 +6,7 @@ import { Order, OrderStatus } from '../../types/types';
 const AdminOrders = () => {
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
+  const [orderStatus, setOrderStatus] = useState('');
 
   useEffect(() => {
     const q = query(collection(db, 'orders'), orderBy('createdAt', 'desc'));
@@ -32,26 +33,41 @@ const AdminOrders = () => {
     return () => unsubscribe(); // Cancela o listener ao desmontar
   }, []);
 
+  useEffect(() => {
+    if (!orderStatus) return;
+
+    const unsubscribe = onSnapshot(doc(db, 'orders', orderStatus), (docSnapshot) => {
+      if (docSnapshot.exists()) {
+        const data = docSnapshot.data();
+        setOrderStatus(data.statusMessage || ''); // Atualiza o estado com a mensagem do Firestore
+      }
+    });
+
+    return () => unsubscribe(); // Cancela o listener ao desmontar
+  }, [orderStatus]);
+
   const updateOrderStatus = async (orderId: string, status: OrderStatus) => {
     try {
-      // Atualiza o status do pedido no Firestore
-      await updateDoc(doc(db, 'orders', orderId), { status });
-
       // Define a mensagem de acordo com o status
-      let message = '';
+      let statusMessage = '';
       switch (status) {
         case 'accepted':
-          message = 'Olá! O seu pedido está em preparo. Em breve estará pronto para entrega. 🍔🚀';
+          statusMessage = 'Olá! O seu pedido está em preparo. Em breve estará pronto para entrega. 🍔🚀';
           break;
         case 'completed':
-          message = 'Seu pedido foi concluído e já saiu para entrega! 🛵💨 Obrigado por escolher nossos serviços!';
+          statusMessage = 'Seu pedido foi concluído e já saiu para entrega! 🛵💨 Obrigado por escolher nossos serviços!';
           break;
         case 'rejected':
-          message = 'Infelizmente, seu pedido não pôde ser processado. 😞 Por favor, tente novamente.';
+          statusMessage = 'Infelizmente, seu pedido não pôde ser processado. 😞 Por favor, tente novamente.';
           break;
+        default:
+          statusMessage = 'Aguarde, seu pedido está sendo processado... 🍔';
       }
 
-      console.log(`Status atualizado: ${message}`); // Exibe a mensagem no console para depuração
+      // Atualiza o status e a mensagem no Firestore
+      await updateDoc(doc(db, 'orders', orderId), { status, statusMessage });
+
+      console.log(`Status atualizado: ${statusMessage}`); // Exibe a mensagem no console para depuração
     } catch (error) {
       console.error('Erro ao atualizar pedido:', error);
     }

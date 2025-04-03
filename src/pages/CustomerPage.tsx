@@ -129,18 +129,16 @@ const CustomerPage = () => {
       {orderStatus && (
         <div
           ref={orderStatusRef}
-          className={`p-4 mb-6 rounded-lg ${orderStatus === 'completed'
-            ? 'bg-green-100 text-green-800'
-            : orderStatus === 'rejected'
-              ? 'bg-red-100 text-red-800'
-              : 'bg-yellow-100 text-yellow-800'
+          className={`p-4 mb-6 rounded-lg ${orderStatus.includes('pronto para entrega') // Para pedidos aceitos
+              ? 'bg-blue-100 text-blue-800'
+              : orderStatus.includes('concluído') // Para pedidos concluídos
+                ? 'bg-green-100 text-green-800'
+                : orderStatus.includes('rejeitado') // Para pedidos rejeitados
+                  ? 'bg-red-100 text-red-800'
+                  : 'bg-yellow-100 text-yellow-800' // Para pedidos pendentes
             }`}
         >
-          {orderStatus === 'completed'
-            ? 'Seu pedido foi concluído! Obrigado por escolher nossos serviços. 🛵💨'
-            : orderStatus === 'rejected'
-              ? 'Infelizmente, seu pedido foi rejeitado. 😞'
-              : 'Aguarde, seu pedido está sendo processado... 🍔'}
+          {orderStatus}
         </div>
       )}
 
