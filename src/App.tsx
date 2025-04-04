@@ -7,6 +7,7 @@ import Login from './pages/Login';
 import AdminPage from './pages/AdminPage';
 import Layout from './components/Layout';
 import CustomerPage from './pages/CustomerPage';
+import './index.css';
 
 export default function App() {
   const [user, setUser] = useState<User | null>(null);
